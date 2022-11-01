@@ -1,46 +1,79 @@
-initialized = false;
-let mic, recorder, player;
-let players = new Tone.Players()
-players.toDestination()
+const startButton = document.getElementById("start");
+const pauseButton = document.getElementById("pause");
+const output = document.getElementById("output");
+const bpmInput = document.getElementById("bpm");
+const recordButton = document.getElementById("record");
+const playButton = document.getElementById("play");
+const deviceSelect = document.getElementById("deviceSelect");
 
-// Rec / Stop
-const recordButtons = document.querySelectorAll(".record")
-const playButtons = document.querySelectorAll(".play")
+const players = [];
+const loops = [];
 
-recordButtons.forEach((button, index) => button.addEventListener("click", async () => {
-  Tone.context.resume(); // https://github.com/Tonejs/Tone.js/issues/341
+Tone.Transport.bpm.value = bpmInput.value;
 
-  // Initialization
-  if (!initialized) {
-    mic = new Tone.UserMedia();
-    recorder = new Tone.Recorder();
+const loop1 = new Tone.Loop((time) => {
+  console.log(Tone.Time(time).toBarsBeatsSixteenths());
+}, "0:1:0").start(0);
 
-    mic.connect(recorder);
-    mic.open();
+function startMetronome() {
+  Tone.start();
+  Tone.Transport.start();
+}
 
-    initialized = true;
-  }
+function pauseMetronome() {
+  Tone.Transport.pause();
+}
 
-  if (button.innerText == "Stop") {
-    const data = await recorder.stop();
-    const blobUrl = URL.createObjectURL(data);
+function updateBPM(bpm) {
+  Tone.Transport.bpm.value = bpm;
+}
 
-    players.add(index, blobUrl);
-    button.innerText = "Record";
-  } else {
-    recorder.start();
-    button.innerText = "Stop";
-  }
-}));
+function startRecording() {
+  Tone.start();
 
-// Play / Stop
-playButtons.forEach((button, index) => button.addEventListener("click", () => {
-  if (button.innerText == "Stop") {
-    players.player(index).stop()
-    button.innerText = "Play";
-  } else {
-    players.player(index).loop = true
-    players.player(index).start()
-    button.innerText = "Stop";
-  }
-}));
+  const recorder = new Tone.Recorder();
+  const mic = new Tone.UserMedia().connect(recorder);
+
+  mic
+    .open()
+    .then(() => {
+      recorder.start();
+
+      Tone.Transport.schedule((time) => {
+        recorder.stop().then((blob) => {
+          const url = URL.createObjectURL(blob);
+          const player = new Tone.Player(url).toDestination();
+          const loop = new Tone.Loop((time) => {
+            player.start(time);
+          }, "1:0:0").start(Tone.now());
+
+          players.push(player);
+          loops.push(loop);
+        });
+      }, "1:0:0");
+
+      Tone.Transport.start();
+    })
+    .catch((e) => {
+      console.log("mic not open");
+    });
+}
+
+function getDeviceOptionsHTML() {
+  Tone.UserMedia.enumerateDevices().then((devices) => {
+    const html = devices
+      .map((device) => {
+        return `<option value="${device.deviceId}">${device.label}</option>`;
+      })
+      .join("");
+
+    deviceSelect.innerHTML = html;
+  });
+}
+
+startButton.addEventListener("click", startMetronome);
+pauseButton.addEventListener("click", pauseMetronome);
+bpmInput.addEventListener("change", (e) => updateBPM(e.target.value));
+recordButton.addEventListener("click", startRecording);
+
+getDeviceOptionsHTML();
