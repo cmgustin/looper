@@ -12,9 +12,9 @@
     <span id="metronome" class="metronome"></span>
     <label>BPM</label>
     <input type="number" id="bpmInput" value="60">
-    <button id="playButton">Play</button>
-    <button id="pauseButton">Pause</button>
-    <button id="stopButton">Stop</button>
+    <button id="playButton" onclick="play()">Play</button>
+    <button id="pauseButton" onclick="pausePlayback()">Pause</button>
+    <button id="stopButton" onclick="stopPlayback()">Stop</button>
     <button id="newTrack" onclick="createNewTrack()">New Track</button>
   </section>
 
