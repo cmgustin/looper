@@ -10,3 +10,16 @@
   margin: 8px 0;
   border: 2px solid #000;
 }
+
+.metronome {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin: 0 8px;
+  border: 2px solid #000;
+  border-radius: 100%;
+}
+
+.metronome.on {
+  background: #000;
+}

@@ -1,7 +1,11 @@
 // Variables
 const tracksContainer = document.querySelector(".tracks");
+const metronome = document.querySelector(".metronome");
+const bpmInput = document.getElementById("bpmInput");
+const tracks = [];
 const players = [];
 const loops = [];
+let metronomeLoop;
 
 // Functions
 function updateBPM(bpmValue) {
@@ -13,6 +17,9 @@ function startRecording(event) {
 
   const recorder = new Tone.Recorder();
   const mic = new Tone.UserMedia().connect(recorder);
+
+  const button = event.target
+
 
   mic
     .open()
@@ -61,8 +68,9 @@ function listAvailableInputs() {
 function getTrackHTML() {
   const track = document.createElement("div")
   track.className = "track"
+  track.id = `track-${tracks.length}`
   track.innerHTML = `
-    <button class="recordButton" onclick="startRecording(event)">Record</button>
+    <button class="recordButton" onclick="startRecording(event)" data-id="${tracks.length}">Record</button>
     <select class="selectInputDevice" name="selectInputDevice">
       <option>Choose your device...</option>
     </select>
@@ -75,17 +83,26 @@ function getTrackHTML() {
 
 function createNewTrack() {
   const track = getTrackHTML()
+  tracks.push(track)
   tracksContainer.append(track)
   listAvailableInputs()
 }
 
-Tone.Transport.bpm.value = bpmInput.value;
+function startMetronome() {
+  metronomeLoop = new Tone.Loop(() => {
+    metronome.classList.toggle("on")
+  }, "0:1:0").start(0)
+}
 
-createNewTrack()
+function initialize() {
+  Tone.Transport.bpm.value = bpmInput.value;
+  createNewTrack();
+  startMetronome();
+}
 
-// startButton.addEventListener("click", startMetronome);
-// pauseButton.addEventListener("click", pauseMetronome);
-// bpmInput.addEventListener("change", (e) => updateBPM(e.target.value));
-// recordButton.addEventListener("click", startRecording);
+initialize()
 
-// getDeviceOptionsHTML();
+// Events
+bpmInput.addEventListener("change", e => {
+  updateBPM(e.target.value)
+})
