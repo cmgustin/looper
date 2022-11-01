@@ -8,21 +8,16 @@
   <title>Looper</title>
 </head>
 <body>
-  BPM
-  <br>
-  <input type="number" id="bpm" value="60">
-  <br>
-  <br>
-  <select id="deviceSelect">
-    <option selected disabled>Choose input device...</option>
-  </select>
-  <br>
-  <br>
-  <button id="start">Start</button>
-  <button id="pause">Pause</button>
-  <button id="record">Record</button>
-  <button id="play">Play</button>
-  <div id="output"></div>
+  <section class="transport">
+    <label>BPM</label>
+    <input type="number" id="bpmInput" value="60">
+    <button id="playButton">Play</button>
+    <button id="pauseButton">Pause</button>
+    <button id="stopButton">Stop</button>
+    <button id="newTrack" onclick="createNewTrack()">New Track</button>
+  </section>
+
+  <section class="tracks"></section>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.48/Tone.min.js"></script>
   <script src="./scripts.js"></script>

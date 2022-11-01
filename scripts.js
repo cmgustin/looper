@@ -1,34 +1,14 @@
-const startButton = document.getElementById("start");
-const pauseButton = document.getElementById("pause");
-const output = document.getElementById("output");
-const bpmInput = document.getElementById("bpm");
-const recordButton = document.getElementById("record");
-const playButton = document.getElementById("play");
-const deviceSelect = document.getElementById("deviceSelect");
-
+// Variables
+const tracksContainer = document.querySelector(".tracks");
 const players = [];
 const loops = [];
 
-Tone.Transport.bpm.value = bpmInput.value;
-
-const loop1 = new Tone.Loop((time) => {
-  console.log(Tone.Time(time).toBarsBeatsSixteenths());
-}, "0:1:0").start(0);
-
-function startMetronome() {
-  Tone.start();
-  Tone.Transport.start();
+// Functions
+function updateBPM(bpmValue) {
+  Tone.Transport.bpm.value = bpmValue;
 }
 
-function pauseMetronome() {
-  Tone.Transport.pause();
-}
-
-function updateBPM(bpm) {
-  Tone.Transport.bpm.value = bpm;
-}
-
-function startRecording() {
+function startRecording(event) {
   Tone.start();
 
   const recorder = new Tone.Recorder();
@@ -59,21 +39,53 @@ function startRecording() {
     });
 }
 
-function getDeviceOptionsHTML() {
+function loadInputs(select) {
   Tone.UserMedia.enumerateDevices().then((devices) => {
-    const html = devices
-      .map((device) => {
+    const html = devices.map((device) => {
         return `<option value="${device.deviceId}">${device.label}</option>`;
-      })
-      .join("");
+      }).join("");
 
-    deviceSelect.innerHTML = html;
+    select.innerHTML = html;
   });
 }
 
-startButton.addEventListener("click", startMetronome);
-pauseButton.addEventListener("click", pauseMetronome);
-bpmInput.addEventListener("change", (e) => updateBPM(e.target.value));
-recordButton.addEventListener("click", startRecording);
+function listAvailableInputs() {
+  document.querySelectorAll(".selectInputDevice").forEach(select => {
+    if (!select.classList.contains("initialized")) {
+      loadInputs(select);
+      select.classList.add("initialized");
+    }
+  })
+}
 
-getDeviceOptionsHTML();
+function getTrackHTML() {
+  const track = document.createElement("div")
+  track.className = "track"
+  track.innerHTML = `
+    <button class="recordButton" onclick="startRecording(event)">Record</button>
+    <select class="selectInputDevice" name="selectInputDevice">
+      <option>Choose your device...</option>
+    </select>
+    <label>Bars</label>
+    <input type="number" value="1" class="numberOfBars">
+    <progress value="0" max="100"></progress>
+  `;
+  return track
+}
+
+function createNewTrack() {
+  const track = getTrackHTML()
+  tracksContainer.append(track)
+  listAvailableInputs()
+}
+
+Tone.Transport.bpm.value = bpmInput.value;
+
+createNewTrack()
+
+// startButton.addEventListener("click", startMetronome);
+// pauseButton.addEventListener("click", pauseMetronome);
+// bpmInput.addEventListener("change", (e) => updateBPM(e.target.value));
+// recordButton.addEventListener("click", startRecording);
+
+// getDeviceOptionsHTML();
